@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import type { User } from '@prisma/client'
+import { BillingPeriod, type User } from '@prisma/client'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
 
 import { InitPaymentRequest } from './dto/init-payment-dto'
@@ -49,7 +49,9 @@ export class PaymentService {
 		if (!plan) throw new NotFoundException('План не найден')
 
 		const amount =
-			billingPeriod === 'YEARLY' ? plan.yearlyPrice : plan.monthlyPrice
+			billingPeriod === BillingPeriod.YEARLY
+				? plan.yearlyPrice
+				: plan.monthlyPrice
 
 		const transaction = await this.prismaService.transaction.create({
 			data: {
