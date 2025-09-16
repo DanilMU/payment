@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { BillingPeriod, type User } from '@prisma/client'
+import { BillingPeriod, PaymentProvider, type User } from '@prisma/client'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
 
 import { InitPaymentRequest } from './dto/init-payment-dto'
+import { YoomoneyService } from './providers/yoomoney/yoomoney.service'
 
 @Injectable()
 export class PaymentService {
-	public constructor(private readonly prismaService: PrismaService) {}
+	public constructor(
+		private readonly prismaService: PrismaService,
+		private readonly yoomoneyService: YoomoneyService
+	) {}
 
 	public async getHistory(user: User) {
 		const payments = await this.prismaService.transaction.findMany({
@@ -25,16 +29,44 @@ export class PaymentService {
 			}
 		})
 
-		const formated = payments.map(payment => ({
+		const formatted = payments.map(payment => ({
 			id: payment.id,
 			createdAt: payment.createdAt,
-			plan: payment.subscription.plan,
+			plan: payment.subscription.plan.title,
 			amount: payment.amount,
 			provider: payment.provider,
 			status: payment.status
 		}))
 
-		return formated
+		return formatted
+	}
+
+	public async getById(id: string) {
+		const transaction = await this.prismaService.transaction.findUnique({
+			where: {
+				id
+			},
+			select: {
+				id: true,
+				billingPeriod: true,
+				subscription: {
+					select: {
+						plan: {
+							select: {
+								id: true,
+								title: true,
+								monthlyPrice: true,
+								yearlyPrice: true
+							}
+						}
+					}
+				}
+			}
+		})
+
+		if (!transaction) throw new NotFoundException('Транзакция не найдена')
+
+		return transaction
 	}
 
 	public async init(dto: InitPaymentRequest, user: User) {
@@ -49,9 +81,13 @@ export class PaymentService {
 		if (!plan) throw new NotFoundException('План не найден')
 
 		const amount =
-			billingPeriod === BillingPeriod.YEARLY
-				? plan.yearlyPrice
-				: plan.monthlyPrice
+			provider === PaymentProvider.STARS
+				? billingPeriod === BillingPeriod.MONTHLY
+					? plan.starsMonthlyPrice
+					: plan.starsYearlyPrice
+				: billingPeriod === BillingPeriod.MONTHLY
+					? plan.monthlyPrice
+					: plan.yearlyPrice
 
 		const transaction = await this.prismaService.transaction.create({
 			data: {
@@ -64,15 +100,20 @@ export class PaymentService {
 					}
 				},
 				subscription: {
-					create: {
-						user: {
-							connect: {
-								id: user.id
-							}
+					connectOrCreate: {
+						where: {
+							userId: user.id
 						},
-						plan: {
-							connect: {
-								id: plan.id
+						create: {
+							user: {
+								connect: {
+									id: user.id
+								}
+							},
+							plan: {
+								connect: {
+									id: plan.id
+								}
 							}
 						}
 					}
@@ -80,6 +121,26 @@ export class PaymentService {
 			}
 		})
 
-		return transaction
+		let payment
+
+		switch (provider) {
+			case PaymentProvider.YOOKASSA:
+				payment = await this.yoomoneyService.create(
+					plan,
+					transaction,
+					billingPeriod
+				)
+		}
+
+		await this.prismaService.transaction.update({
+			where: {
+				id: transaction.id
+			},
+			data: {
+				providerMeta: payment
+			}
+		})
+
+		return payment
 	}
 }
