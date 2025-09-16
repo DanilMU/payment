@@ -16,8 +16,8 @@ export const plans: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>[] = [
 		yearlyPrice: 8160,
 		starsMonthlyPrice: 475,
 		starsYearlyPrice: 4650,
-		stripeMonthlyPriceId: 'price_1RwjycLAJ01q62SLKEgFfmBN',
-		stripeYearlyPriceId: 'price_1RwjycLAJ01q62SL2bja62ld'
+		stripeMonthlyPriceId: 'price_1S84RBHcTcpsKp9BY523yowp',
+		stripeYearlyPriceId: 'price_1S84RBHcTcpsKp9BU2B9fKMf'
 	},
 	{
 		title: 'Профессиональный',
@@ -34,8 +34,8 @@ export const plans: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>[] = [
 		yearlyPrice: 23990,
 		starsMonthlyPrice: 1395,
 		starsYearlyPrice: 13390,
-		stripeMonthlyPriceId: 'price_1RwjzoLAJ01q62SLFYsSJHW7',
-		stripeYearlyPriceId: 'price_1RwjzoLAJ01q62SLADI0B0gx'
+		stripeMonthlyPriceId: 'price_1S84VEHcTcpsKp9BT8Lw9JFF',
+		stripeYearlyPriceId: 'price_1S84VEHcTcpsKp9B4z7C52vb'
 	},
 	{
 		title: 'Бизнес',
@@ -53,7 +53,7 @@ export const plans: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>[] = [
 		yearlyPrice: 47990,
 		starsMonthlyPrice: 2789,
 		starsYearlyPrice: 26820,
-		stripeMonthlyPriceId: 'price_1Rwk0yLAJ01q62SL7CVXandP',
-		stripeYearlyPriceId: 'price_1Rwk0yLAJ01q62SLosh4N89q'
+		stripeMonthlyPriceId: 'price_1S84XZHcTcpsKp9Bzvslc905',
+		stripeYearlyPriceId: 'price_1S84XZHcTcpsKp9BcKzGkJF5'
 	}
 ]
