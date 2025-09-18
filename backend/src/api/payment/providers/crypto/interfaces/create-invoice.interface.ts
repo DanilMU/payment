@@ -39,6 +39,7 @@ export enum InvoiceStatus {
 }
 
 export interface CreateInvoiceResponse {
+	result: CreateInvoiceResponse | PromiseLike<CreateInvoiceResponse>
 	invoice_id: number
 	hash: string
 	currency_type: Currency

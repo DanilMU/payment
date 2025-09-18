@@ -31,10 +31,10 @@ export class StripeService {
 		plan: Plan,
 		transaction: Transaction,
 		user: User,
-		billengPeriod: BillingPeriod
+		billingPeriod: BillingPeriod
 	) {
 		const priceId =
-			billengPeriod === BillingPeriod.MONTHLY
+			billingPeriod === BillingPeriod.MONTHLY
 				? plan.stripeMonthlyPriceId
 				: plan.stripeYearlyPriceId
 		if (!priceId)
@@ -42,7 +42,7 @@ export class StripeService {
 				'Stripe priceId is missing for this plan'
 			)
 
-		const success_url = 'https://73d73c048a68.ngrok-free.app'
+		const success_url = 'https://a6ry9f-85-234-53-212.ru.tuna.am'
 		const cancel_url = this.configService.getOrThrow<string>('APP_URL')
 
 		const session = await this.stripe.checkout.sessions.create({

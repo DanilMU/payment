@@ -32,4 +32,12 @@ export class WebhookController {
 	) {
 		return await this.webhookService.handleStripe(req.rawBody, sig)
 	}
+
+	@Post('crypto')
+	@HttpCode(HttpStatus.OK)
+	public async handleCrypto(@Body() dto: any) {
+		console.log('CRYPTO WEBHOOK: ', dto)
+
+		return dto
+	}
 }

@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { BillingPeriod, type Plan, type Transaction } from '@prisma/client'
+import { type Plan, type Transaction } from '@prisma/client'
 import { firstValueFrom } from 'rxjs'
 
 import { CRYPTOPAY_API_URL } from '../../constants'
@@ -26,10 +26,9 @@ export class CryptoService {
 		this.TOKEN = this.configService.getOrThrow<string>('CRYPTO_PAY_TOKEN')
 	}
 
-	public async createInvoice(
+	public async create(
 		plan: Plan,
-		transaction: Transaction,
-		billingPeriod: BillingPeriod
+		transaction: Transaction
 	): Promise<CreateInvoiceResponse> {
 		const payload: CreateInvoiceRequest = {
 			amount: transaction.amount,
@@ -38,7 +37,7 @@ export class CryptoService {
 			description: `Оплата подписки на тарифный план "${plan.title}"`,
 			hidden_message: 'Спасибо за покупку! Подписка активирована',
 			paid_btn_name: PaidButtonName.CALLBACK,
-			paid_btn_url: 'https://73d73c048a68.ngrok-free.app'
+			paid_btn_url: 'https://a6ry9f-85-234-53-212.ru.tuna.am'
 		}
 
 		const response = await this.makeRequest<CreateInvoiceResponse>(
@@ -47,7 +46,7 @@ export class CryptoService {
 			payload
 		)
 
-		return response
+		return response.result
 	}
 
 	private async makeRequest<T>(

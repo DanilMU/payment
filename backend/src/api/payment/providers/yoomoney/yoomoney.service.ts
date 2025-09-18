@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { BillingPeriod, type Plan, type Transaction } from '@prisma/client'
+import { type Plan, type Transaction } from '@prisma/client'
 import {
 	ConfirmationEnum,
 	CurrencyEnum,
@@ -11,11 +11,7 @@ import {
 export class YoomoneyService {
 	public constructor(private readonly yookassaService: YookassaService) {}
 
-	public async create(
-		plan: Plan,
-		transaction: Transaction,
-		billengPeriod: BillingPeriod
-	) {
+	public async create(plan: Plan, transaction: Transaction) {
 		const payment = await this.yookassaService.createPayment({
 			amount: {
 				value: transaction.amount,
@@ -27,7 +23,7 @@ export class YoomoneyService {
 			},
 			confirmation: {
 				type: ConfirmationEnum.redirect,
-				return_url: ' https://73d73c048a68.ngrok-free.app'
+				return_url: 'https://a6ry9f-85-234-53-212.ru.tuna.am'
 			},
 			save_payment_method: true
 		})
