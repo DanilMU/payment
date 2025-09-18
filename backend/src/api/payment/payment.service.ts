@@ -3,6 +3,7 @@ import { BillingPeriod, PaymentProvider, type User } from '@prisma/client'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
 
 import { InitPaymentRequest } from './dto/init-payment-dto'
+import { CryptoService } from './providers/crypto/crypto.service'
 import { StripeService } from './providers/stripe/stripe.service'
 import { YoomoneyService } from './providers/yoomoney/yoomoney.service'
 
@@ -11,7 +12,8 @@ export class PaymentService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly yoomoneyService: YoomoneyService,
-		private readonly stripeService: StripeService
+		private readonly stripeService: StripeService,
+		private readonly cryptoService: CryptoService
 	) {}
 
 	public async getHistory(user: User) {
@@ -137,6 +139,12 @@ export class PaymentService {
 					plan,
 					transaction,
 					user,
+					billingPeriod
+				)
+			case PaymentProvider.CRYPTOPAY:
+				payment = await this.cryptoService.createInvoice(
+					plan,
+					transaction,
 					billingPeriod
 				)
 		}

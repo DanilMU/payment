@@ -16,14 +16,9 @@ export class YoomoneyService {
 		transaction: Transaction,
 		billengPeriod: BillingPeriod
 	) {
-		const amount =
-			billengPeriod === BillingPeriod.MONTHLY
-				? plan.monthlyPrice
-				: plan.yearlyPrice
-
 		const payment = await this.yookassaService.createPayment({
 			amount: {
-				value: amount,
+				value: transaction.amount,
 				currency: CurrencyEnum.RUB
 			},
 			description: `Оплата подписки на тарифный план "${plan.title}"`,
