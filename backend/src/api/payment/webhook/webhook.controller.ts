@@ -4,12 +4,15 @@ import {
 	Headers,
 	HttpCode,
 	HttpStatus,
+	Ip,
 	Post,
 	type RawBodyRequest,
-	Req
+	Req,
+	UnauthorizedException
 } from '@nestjs/common'
 import type { Request } from 'express'
 
+import { YookassaWebhookDto } from './dto'
 import { WebhookService } from './webhook.service'
 
 @Controller('webhook')
@@ -18,10 +21,11 @@ export class WebhookController {
 
 	@Post('yookassa')
 	@HttpCode(HttpStatus.OK)
-	public async handleYookassa(@Body() dto: any) {
-		console.log('YOOKASSA WEBHOOK: ', dto)
-
-		return dto
+	public async handleYookassa(
+		@Body() dto: YookassaWebhookDto,
+		@Ip() ip: string
+	) {
+		return await this.webhookService.handleYookassa(dto, ip)
 	}
 
 	@Post('stripe')
@@ -30,14 +34,19 @@ export class WebhookController {
 		@Req() req: RawBodyRequest<Request>,
 		@Headers('stripe-signature') sig: string
 	) {
-		return await this.webhookService.handleStripe(req.rawBody, sig)
+		if (!sig) throw new UnauthorizedException('Missing signature')
+
+		return await this.webhookService.handleStripe(req.rawBody!, sig)
 	}
 
 	@Post('crypto')
 	@HttpCode(HttpStatus.OK)
-	public async handleCrypto(@Body() dto: any) {
-		console.log('CRYPTO WEBHOOK: ', dto)
+	public async handleCrypto(
+		@Req() req: RawBodyRequest<Request>,
+		@Headers('crypto-pay-api-signature') sig: string
+	) {
+		if (!sig) throw new UnauthorizedException('Missing signature')
 
-		return dto
+		return await this.webhookService.handleCrypto(req.rawBody!, sig)
 	}
 }

@@ -144,6 +144,8 @@ export class PaymentService {
 				break
 		}
 
+		console.log('Payment response: ', payment)
+
 		await this.prismaService.transaction.update({
 			where: {
 				id: transaction.id
