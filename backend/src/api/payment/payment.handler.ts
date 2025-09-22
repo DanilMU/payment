@@ -4,8 +4,8 @@ import {
 	SubscriptionStatus,
 	TransactionStatus
 } from '@prisma/client'
-import { ok } from 'assert'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
+import { MailService } from 'src/libs/mail/mail.service'
 
 import type { PaymentWebhookResult } from './interfaces'
 
@@ -13,7 +13,10 @@ import type { PaymentWebhookResult } from './interfaces'
 export class PaymentHandler {
 	private readonly logger = new Logger(PaymentHandler.name)
 
-	public constructor(private readonly prismaService: PrismaService) {}
+	public constructor(
+		private readonly prismaService: PrismaService,
+		private readonly mailService: MailService
+	) {}
 
 	public async processResult(result: PaymentWebhookResult) {
 		const { transactionId, planId, paymentId, status, raw } = result
@@ -92,6 +95,11 @@ export class PaymentHandler {
 					}
 				}
 			})
+
+			await this.mailService.sendPaymentSuccessEmail(
+				subscription.user,
+				transaction
+			)
 
 			this.logger.log(`✅ Payment succeeded ${subscription.user.email}`)
 		} else if (status === TransactionStatus.FAILED) {
