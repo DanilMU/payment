@@ -1,6 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { type Plan, type Transaction, TransactionStatus } from '@prisma/client'
+import {
+	type Plan,
+	type Transaction,
+	TransactionStatus,
+	type User
+} from '@prisma/client'
 import CIDR from 'ip-cidr'
 import {
 	ConfirmationEnum,
@@ -8,6 +13,7 @@ import {
 	PaymentMethodsEnum,
 	YookassaService
 } from 'nestjs-yookassa'
+import { VatCodesEnum } from 'nestjs-yookassa/dist/interfaces/receipt-details.interface'
 
 import type { PaymentWebhookResult } from '../../interfaces'
 import { YookassaWebhookDto } from '../../webhook/dto'
@@ -55,6 +61,45 @@ export class YoomoneyService {
 				planId: plan.id
 			}
 		})
+		return payment
+	}
+
+	public async createBySavedCard(
+		plan: Plan,
+		user: User,
+		transaction: Transaction
+	) {
+		const payment = await this.yookassaService.createPayment({
+			amount: {
+				value: transaction.amount,
+				currency: CurrencyEnum.RUB
+			},
+			description: `Рекурентное списание за тариф "${plan.title}"`,
+			receipt: {
+				customer: {
+					email: user.email
+				},
+				items: [
+					{
+						description: `Рекурентное списание за тариф "${plan.title}"`,
+						quantity: 1,
+						amount: {
+							value: transaction.amount,
+							currency: CurrencyEnum.RUB
+						},
+						vat_code: VatCodesEnum.ndsNone
+					}
+				]
+			},
+			payment_method_id: transaction.externalId ?? '',
+			capture: true,
+			save_payment_method: true,
+			metadata: {
+				transactionId: transaction.id,
+				planId: plan.id
+			}
+		})
+
 		return payment
 	}
 
