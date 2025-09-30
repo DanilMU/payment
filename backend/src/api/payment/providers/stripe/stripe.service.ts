@@ -8,7 +8,6 @@ import {
 	TransactionStatus,
 	type User
 } from '@prisma/client'
-import { connect } from 'http2'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
 import Stripe from 'stripe'
 
@@ -185,6 +184,15 @@ export class StripeService {
 				return null
 			}
 		}
+	}
+
+	public async updateAutoRenewal(
+		subscriptionId: string,
+		isAutoRenewal: boolean
+	) {
+		await this.stripe.subscriptions.update(subscriptionId, {
+			cancel_at_period_end: !isAutoRenewal
+		})
 	}
 
 	public async parseEvent(

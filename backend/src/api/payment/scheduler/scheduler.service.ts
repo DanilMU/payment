@@ -108,7 +108,7 @@ export class SchedulerService {
 		}
 	}
 
-	@Cron(CronExpression.EVERY_10_SECONDS)
+	@Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
 	public async expireSubscriptions() {
 		const now = new Date()
 
