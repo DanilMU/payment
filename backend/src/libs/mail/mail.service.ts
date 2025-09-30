@@ -1,20 +1,30 @@
 import { type ISendMailOptions, MailerService } from '@nestjs-modules/mailer'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import type { Transaction, User } from '@prisma/client'
 import { render } from '@react-email/components'
 import { Queue } from 'bullmq'
 
-import { PaymentFailedTemplate, PaymentSuccessTemplate } from './templates'
+import {
+	PaymentFailedTemplate,
+	PaymentSuccessTemplate,
+	SubscriptionExpiredTemplate
+} from './templates'
 
 @Injectable()
 export class MailService {
 	private readonly logger = new Logger(MailService.name)
 
+	private readonly APP_URL: string
+
 	public constructor(
 		private readonly mailerService: MailerService,
-		@InjectQueue('mail') private readonly queue: Queue
-	) {}
+		@InjectQueue('mail') private readonly queue: Queue,
+		private readonly configService: ConfigService
+	) {
+		this.APP_URL = this.configService.getOrThrow<string>('APP_URL')
+	}
 
 	public async sendPaymentSuccessEmail(user: User, transaction: Transaction) {
 		const html = await render(PaymentSuccessTemplate({ transaction }))
@@ -38,6 +48,22 @@ export class MailService {
 			{
 				email: user.email,
 				subject: 'Проблема с обработкой платежа',
+				html
+			},
+			{ removeOnComplete: true }
+		)
+	}
+
+	public async sendSubscriptionExpiredEmail(user: User) {
+		const accountUrl = `${this.APP_URL}/dashboard`
+
+		const html = await render(SubscriptionExpiredTemplate({ accountUrl }))
+
+		await this.queue.add(
+			'send-email',
+			{
+				email: user.email,
+				subject: 'Выша подписка истекла',
 				html
 			},
 			{ removeOnComplete: true }

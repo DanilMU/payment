@@ -8,6 +8,7 @@ import {
 	TransactionStatus,
 	type User
 } from '@prisma/client'
+import { connect } from 'http2'
 import { PrismaService } from 'src/infra/prisma/prisma.service'
 import Stripe from 'stripe'
 
@@ -55,8 +56,8 @@ export class StripeService {
 				'Stripe priceId is missing for this plan'
 			)
 
-		const successUrl = `${this.APP_URL}/payment/${transaction.id}/success`
-		const cancelUrl = `${this.APP_URL}`
+		const successUrl = 'https://www.google.com'
+		const cancelUrl = this.configService.getOrThrow<string>('APP_URL')
 
 		let customerId = user.stripeCustomerId
 
@@ -140,21 +141,43 @@ export class StripeService {
 				}
 			}
 
+			case 'invoice.payment_succeeded':
+				const invoice = event.data.object
+
+				if (invoice.billing_reason !== 'subscription_create')
+					return null
+
+				return await this.handleAutoBilling(
+					invoice.customer as string,
+					TransactionStatus.SUCCEEDED,
+					invoice.id ?? '',
+					event
+				)
+
 			case 'invoice.payment_failed': {
 				const invoice = event.data.object
 
-				const transactionId = invoice.metadata?.transactionId
-				const planId = invoice.metadata?.planId
-				const paymentId = invoice.id
+				if (invoice.billing_reason === 'subscription_cycle') {
+					return await this.handleAutoBilling(
+						invoice.customer as string,
+						TransactionStatus.FAILED,
+						invoice.id ?? '',
+						event
+					)
+				} else {
+					const transactionId = invoice.metadata?.transactionId
+					const planId = invoice.metadata?.planId
+					const paymentId = invoice.id
 
-				if (!transactionId || !planId || !paymentId) return null
+					if (!transactionId || !planId || !paymentId) return null
 
-				return {
-					transactionId,
-					planId,
-					paymentId,
-					status: TransactionStatus.FAILED,
-					raw: event
+					return {
+						transactionId,
+						planId,
+						paymentId,
+						status: TransactionStatus.FAILED,
+						raw: event
+					}
 				}
 			}
 
@@ -178,6 +201,77 @@ export class StripeService {
 			throw new BadRequestException(
 				`Webhook signature verification: ${error.message}`
 			)
+		}
+	}
+
+	private async handleAutoBilling(
+		customerId: string,
+		status: TransactionStatus,
+		externalId: string,
+		event: Stripe.Event
+	) {
+		const user = await this.prismaService.user.findUnique({
+			where: {
+				stripeCustomerId: customerId
+			},
+			include: {
+				subscription: true,
+				transactions: {
+					where: {
+						status: TransactionStatus.SUCCEEDED
+					},
+					orderBy: {
+						createdAt: 'desc'
+					},
+					take: 1
+				}
+			}
+		})
+
+		if (!user || !user.subscription) return null
+
+		const lastTransaction = user.transactions[0]
+
+		if (!lastTransaction || !lastTransaction.subscriptionId) return null
+
+		const subscription =
+			await this.prismaService.userSubscription.findUnique({
+				where: {
+					id: lastTransaction.subscriptionId
+				},
+				include: {
+					plan: true
+				}
+			})
+
+		if (!subscription) return null
+
+		const transaction = await this.prismaService.transaction.create({
+			data: {
+				amount: lastTransaction.amount,
+				provider: PaymentProvider.STRIPE,
+				billingPeriod: lastTransaction.billingPeriod,
+				status,
+				externalId,
+				user: {
+					connect: {
+						id: user.id
+					}
+				},
+				subscription: {
+					connect: {
+						id: subscription.id
+					}
+				}
+			}
+		})
+
+		return {
+			transactionId: transaction.id,
+			planId: subscription.plan.id,
+			paymentId: externalId,
+			status: TransactionStatus.SUCCEEDED,
+			raw: event
 		}
 	}
 }
