@@ -11,8 +11,8 @@ export class UsersController {
 
 	@Protected()
 	@Get('@me')
-	public async getMe(@Authorized() user: User) {
-		return user
+	public async getMe(@Authorized('id') id: string) {
+		return await this.usersService.getMe(id)
 	}
 
 	@Protected()
