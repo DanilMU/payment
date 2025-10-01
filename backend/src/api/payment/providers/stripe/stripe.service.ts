@@ -55,8 +55,8 @@ export class StripeService {
 				'Stripe priceId is missing for this plan'
 			)
 
-		const successUrl = 'https://www.google.com'
-		const cancelUrl = this.configService.getOrThrow<string>('APP_URL')
+		const successUrl = `${this.APP_URL}/payment/${transaction.id}/success`
+		const cancelUrl = `${this.APP_URL}`
 
 		let customerId = user.stripeCustomerId
 

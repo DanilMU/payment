@@ -42,6 +42,8 @@ export class YoomoneyService {
 	}
 
 	public async create(plan: Plan, transaction: Transaction) {
+		const successUrl = `${this.APP_URL}/payment/${transaction.id}/success`
+
 		const payment = await this.yookassaService.createPayment({
 			amount: {
 				value: transaction.amount,
@@ -53,7 +55,7 @@ export class YoomoneyService {
 			},
 			confirmation: {
 				type: ConfirmationEnum.redirect,
-				return_url: 'https://fvxu01-85-234-53-212.ru.tuna.am'
+				return_url: successUrl
 			},
 			save_payment_method: true,
 			metadata: {

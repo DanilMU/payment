@@ -155,6 +155,11 @@ export class PaymentService {
 			}
 		})
 
-		return payment
+		return {
+			url:
+				payment.url ||
+				payment.confirmation.confirmation_url ||
+				payment.mini_app_invoice_url
+		}
 	}
 }

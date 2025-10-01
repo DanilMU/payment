@@ -4,7 +4,7 @@ import { PrismaService } from 'src/infra/prisma/prisma.service'
 
 import { StripeService } from '../payment/providers/stripe/stripe.service'
 
-import { updateAutoRenewalRequest } from './dto'
+import { UpdateAutoRenewalRequest } from './dto'
 
 @Injectable()
 export class UsersService {
@@ -44,7 +44,7 @@ export class UsersService {
 		return user
 	}
 
-	public async updateAutoRenewal(user: User, dto: updateAutoRenewalRequest) {
+	public async updateAutoRenewal(user: User, dto: UpdateAutoRenewalRequest) {
 		const { isAutoRenewal } = dto
 
 		const subscription =
