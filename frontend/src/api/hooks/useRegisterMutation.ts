@@ -9,7 +9,7 @@ export function useRegisterMutation(
         'mutationKey' | 'mutationFn'
     >
 ) {
-    return useMutation<void, unknown, RegisterFormValues>({
+    return useMutation({
         mutationKey: ['register'],
         mutationFn: (data: RegisterFormValues) => register(data),
         ...options
