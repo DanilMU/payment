@@ -4,6 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 
+import { useRegisterMutation } from '@/api/hooks'
+
+import { Button } from '../ui/button'
 import {
 	Form,
 	FormControl,
@@ -16,7 +19,6 @@ import {
 import { Input } from '../ui/input'
 
 import { AuthWrapper } from './auth-wrapper'
-import { Button } from '../ui/button'
 
 const registerSchema = z.object({
 	name: z.string().min(1, { message: 'Имя обязательно' }),
@@ -30,7 +32,9 @@ const registerSchema = z.object({
 export type RegisterFormValues = z.infer<typeof registerSchema>
 
 export function RegisterForm() {
-	const form = useForm<RegisterFormValues>({
+	const { mutate, isPending } = useRegisterMutation()
+
+	const form = useForm<RegisterFormValues>({ 
 		resolver: zodResolver(registerSchema),
 		defaultValues: {
 			name: '',
@@ -40,7 +44,7 @@ export function RegisterForm() {
 	})
 
 	const onSubmit = (values: RegisterFormValues) => {
-		console.log(values)
+		mutate(values)
 	}
 
 	return (
@@ -63,7 +67,11 @@ export function RegisterForm() {
 							<FormItem>
 								<FormLabel>Имя</FormLabel>
 								<FormControl>
-									<Input placeholder='Ваше имя' {...field} />
+									<Input
+										placeholder='Ваше имя'
+										disabled={isPending}
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -79,6 +87,7 @@ export function RegisterForm() {
 								<FormControl>
 									<Input
 										placeholder='name@example.com'
+										disabled={isPending}
 										{...field}
 									/>
 								</FormControl>
@@ -97,6 +106,7 @@ export function RegisterForm() {
 									<Input
 										type='password'
 										placeholder='123456'
+										disabled={isPending}
 										{...field}
 									/>
 								</FormControl>
@@ -105,7 +115,12 @@ export function RegisterForm() {
 						)}
 					/>
 
-					<Button type='submit' size='lg' className='w-full'>
+					<Button
+						type='submit'
+						size='lg'
+						className='w-full'
+						disabled={isPending}
+					>
 						Продолжить
 					</Button>
 				</form>

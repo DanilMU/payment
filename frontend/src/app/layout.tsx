@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
 import './globals.css'
+import { Providers } from './providers'
 
 const geist = Geist({
 	subsets: ['latin']
@@ -18,11 +19,9 @@ export default function RootLayout({
 	children: React.ReactNode
 }>) {
 	return (
-		<html lang='en'>
-			<body
-				className={`${geist.className} antialiased`}
-			>
-				{children}
+		<html lang='ru'>
+			<body className={`${geist.className} antialiased`}>
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	)
