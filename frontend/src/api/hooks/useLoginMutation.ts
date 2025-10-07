@@ -1,17 +1,17 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query'
 
-import { LoginFormValues } from '@/components/auth/login-form'
 import { login } from '../requests'
+import type { AuthResponse, LoginRequest } from '../types'
 
 export function useLoginMutation(
     options?: Omit<
-        UseMutationOptions<void, unknown, LoginFormValues>,
+        UseMutationOptions<AuthResponse, unknown, LoginRequest>,
         'mutationKey' | 'mutationFn'
     >
 ) {
     return useMutation({
         mutationKey: ['login'],
-        mutationFn: (data: LoginFormValues) => login(data),
+        mutationFn: (data: LoginRequest) => login(data),
         ...options
     })
 }
