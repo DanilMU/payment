@@ -28,7 +28,7 @@ const loginSchema = z.object({
 		.max(128, { message: 'Пароль должен содержать не более 128 символов' })
 })
 
-export type LoginFormValues = z.infer<typeof loginSchema>
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
 	const { mutate, isPending } = useLoginMutation()

@@ -29,7 +29,7 @@ const registerSchema = z.object({
 		.max(128, { message: 'Пароль должен содержать не более 128 символов' })
 })
 
-export type RegisterFormValues = z.infer<typeof registerSchema>
+type RegisterFormValues = z.infer<typeof registerSchema>
 
 export function RegisterForm() {
 	const { mutate, isPending } = useRegisterMutation()

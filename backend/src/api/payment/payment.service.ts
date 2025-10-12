@@ -158,7 +158,7 @@ export class PaymentService {
 		return {
 			url:
 				payment.url ||
-				payment.confirmation.confirmation_url ||
+				payment.confirmation?.confirmation_url ||
 				payment.mini_app_invoice_url
 		}
 	}
