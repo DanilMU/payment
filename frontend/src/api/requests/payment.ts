@@ -1,5 +1,10 @@
 import { api, instance } from "../instance";
-import type { InitPaymentRequest, InitPaymentResponse, PaymentDetailsResponse } from "../types";
+import type { InitPaymentRequest, InitPaymentResponse, PaymentDetailsResponse, PaymentHistoryResponse } from "../types";
+
+export const getPaymentHistory = async () =>
+    await instance
+        .get<PaymentHistoryResponse[]>('/payment')
+        .then(res => res.data)
 
 export const getPaymentById = async (id: string) =>
     await api
